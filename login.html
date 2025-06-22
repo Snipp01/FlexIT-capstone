@@ -5,21 +5,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Login Page - Dashboard Admin Template</title>
-    <!--
-
-    Template 2108 Dashboard
-
-	http://www.tooplate.com/view/2108-dashboard
-
-    -->
+    <title>Login Page - Goals Gym Baguio</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600">
-    <!-- https://fonts.google.com/specimen/Open+Sans -->
     <link rel="stylesheet" href="css/fontawesome.min.css">
-    <!-- https://fontawesome.com/ -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
-    <!-- https://getbootstrap.com/ -->
-    <link rel="stylesheet" href="css/tooplate.css">
+    <style>
+        body.bg03 {
+            background: linear-gradient(135deg, #ff4d4d, #990000);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .tm-block {
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        .tm-block-title {
+            color: #990000;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background-color: #cc0000;
+            border-color: #990000;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: #990000;
+            border-color: #800000;
+        }
+        .tm-site-icon {
+            color: #cc0000;
+        }
+        input.form-control:focus {
+            border-color: #cc0000;
+            box-shadow: 0 0 0 0.2rem rgba(204, 0, 0, 0.25);
+        }
+        .password-toggle {
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 5;
+        }
+    </style>
 </head>
 
 <body class="bg03">
@@ -29,27 +58,36 @@
                 <div class="bg-white tm-block">
                     <div class="row">
                         <div class="col-12 text-center">
-                            <i class="fas fa-3x fa-tachometer-alt tm-site-icon text-center"></i>
-                            <h2 class="tm-block-title mt-3">Login</h2>
+                            <i class="fas fa-3x fa-dumbbell tm-site-icon text-center"></i>
+                            <h2 class="tm-block-title mt-3">Goals Gym Baguio</h2>
+                            <h4 class="mt-2">Member Login</h4>
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-12">
-                            <form action="index.html" method="post" class="tm-login-form">
-                                <div class="input-group">
-                                    <label for="username" class="col-xl-4 col-lg-4 col-md-4 col-sm-5 col-form-label">Username</label>
-                                    <input name="username" type="text" class="form-control validate col-xl-9 col-lg-8 col-md-8 col-sm-7" id="username" value="admin" required>
-                                </div>
+                            <form id="loginForm" class="tm-login-form">
                                 <div class="input-group mt-3">
-                                    <label for="password" class="col-xl-4 col-lg-4 col-md-4 col-sm-5 col-form-label">Password</label>
-                                    <input name="password" type="password" class="form-control validate" id="password" value="1234" required>
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    </div>
+                                    <input name="username" type="text" class="form-control" id="username" placeholder="Username" required>
                                 </div>
-                                <div class="input-group mt-3">
-                                    <button type="submit" class="btn btn-primary d-inline-block mx-auto">Login</button>
+                                <div class="input-group mt-3" style="position: relative;">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    </div>
+                                    <input name="password" type="password" class="form-control" id="password" placeholder="Password" required>
+                                    <i class="fas fa-eye password-toggle" id="togglePassword"></i>
                                 </div>
-                                <div class="input-group mt-3">
-                                    <p><em>Just put a character to login.</em></p>
+                                <div class="input-group mt-4">
+                                    <button type="submit" class="btn btn-primary d-inline-block mx-auto">
+                                        <i class="fas fa-sign-in-alt mr-2"></i>Login
+                                    </button>
                                 </div>
+                                <div class="input-group mt-3 text-center">
+                                    <a href="#" class="text-danger">Forgot password?</a>
+                                </div>
+                                <div id="loginMessage" class="mt-3 text-center text-danger"></div>
                             </form>
                         </div>
                     </div>
@@ -58,13 +96,104 @@
         </div>
         <footer class="row tm-mt-big">
             <div class="col-12 font-weight-light text-center">
-                <p class="d-inline-block tm-bg-black text-white py-2 px-4">
-                    Copyright &copy; 2018 Admin Dashboard . Created by
-                    <a rel="nofollow" href="https://www.tooplate.com" class="text-white tm-footer-link">Tooplate</a>
+                <p class="d-inline-block text-white py-2 px-4">
+                    &copy; 2023 Goals Gym Baguio - Team FlexIT
                 </p>
             </div>
         </footer>
     </div>
-</body>
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Password visibility toggle
+            $('#togglePassword').click(function() {
+                const passwordField = $('#password');
+                const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+                passwordField.attr('type', type);
+                $(this).toggleClass('fa-eye fa-eye-slash');
+            });
 
+            // Check for existing session
+            if (localStorage.getItem('gymToken')) {
+                verifyToken(localStorage.getItem('gymToken'));
+            }
+
+            // Token verification function
+            function verifyToken(token) {
+                $.ajax({
+                    url: 'http://localhost:3000/api/verify-token',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ token: token }),
+                    success: function(response) {
+                        if (response.valid) {
+                            const redirectPage = response.role === 'admin' ? 'index.html' : 'member-dashboard.html';
+                            window.location.href = redirectPage;
+                        } else {
+                            localStorage.removeItem('gymToken');
+                            localStorage.removeItem('userRole');
+                        }
+                    },
+                    error: function() {
+                        localStorage.removeItem('gymToken');
+                        localStorage.removeItem('userRole');
+                    }
+                });
+            }
+
+            // Login form submission
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                const username = $('#username').val().trim();
+                const password = $('#password').val();
+                
+                // Validation
+                if (!username || !password) {
+                    $('#loginMessage').text('Please enter both username and password');
+                    return;
+                }
+
+                // UI Loading state
+                const $submitBtn = $('button[type="submit"]');
+                $submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Authenticating...').prop('disabled', true);
+                $('#loginMessage').text('');
+
+                // MongoDB API call
+                $.ajax({
+                    url: 'http://localhost:3000/api/login',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        username: username,
+                        password: password
+                    }),
+                    success: function(response) {
+                        // Store the JWT token and user data
+                        localStorage.setItem('gymToken', response.token);
+                        localStorage.setItem('userRole', response.role);
+                        
+                        // Redirect based on role
+                        const redirectPage = response.role === 'admin' ? 'index.html' : 'member-dashboard.html';
+                        window.location.href = redirectPage;
+                    },
+                    error: function(xhr) {
+                        $submitBtn.html('<i class="fas fa-sign-in-alt mr-2"></i>Login').prop('disabled', false);
+                        
+                        let errorMessage = 'Login failed. Please try again.';
+                        if (xhr.status === 401) {
+                            errorMessage = 'Invalid username or password';
+                        } else if (xhr.responseJSON?.error) {
+                            errorMessage = xhr.responseJSON.error;
+                        } else if (xhr.status === 0) {
+                            errorMessage = 'Cannot connect to server. Please check your connection.';
+                        }
+                        
+                        $('#loginMessage').text(errorMessage);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
 </html>
