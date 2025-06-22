@@ -47,6 +47,10 @@
             top: 50%;
             transform: translateY(-50%);
             z-index: 5;
+            color: #495057;
+        }
+        #loginMessage {
+            min-height: 24px;
         }
     </style>
 </head>
@@ -102,6 +106,7 @@
             </div>
         </footer>
     </div>
+
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script>
@@ -117,29 +122,6 @@
             // Check for existing session
             if (localStorage.getItem('gymToken')) {
                 verifyToken(localStorage.getItem('gymToken'));
-            }
-
-            // Token verification function
-            function verifyToken(token) {
-                $.ajax({
-                    url: 'http://localhost:3000/api/verify-token',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ token: token }),
-                    success: function(response) {
-                        if (response.valid) {
-                            const redirectPage = response.role === 'admin' ? 'index.html' : 'member-dashboard.html';
-                            window.location.href = redirectPage;
-                        } else {
-                            localStorage.removeItem('gymToken');
-                            localStorage.removeItem('userRole');
-                        }
-                    },
-                    error: function() {
-                        localStorage.removeItem('gymToken');
-                        localStorage.removeItem('userRole');
-                    }
-                });
             }
 
             // Login form submission
@@ -159,9 +141,14 @@
                 $submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Authenticating...').prop('disabled', true);
                 $('#loginMessage').text('');
 
-                // MongoDB API call
+                // Determine API URL based on environment
+                const apiUrl = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3000/api/login' 
+                    : '/api/login';
+
+                // API call
                 $.ajax({
-                    url: 'http://localhost:3000/api/login',
+                    url: apiUrl,
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({
@@ -169,12 +156,12 @@
                         password: password
                     }),
                     success: function(response) {
-                        // Store the JWT token and user data
                         localStorage.setItem('gymToken', response.token);
                         localStorage.setItem('userRole', response.role);
                         
-                        // Redirect based on role
-                        const redirectPage = response.role === 'admin' ? 'index.html' : 'member-dashboard.html';
+                        const redirectPage = response.role === 'admin' 
+                            ? 'index.html' 
+                            : 'member-dashboard.html';
                         window.location.href = redirectPage;
                     },
                     error: function(xhr) {
@@ -193,6 +180,35 @@
                     }
                 });
             });
+
+            // Token verification function
+            function verifyToken(token) {
+                const verifyUrl = window.location.hostname === 'localhost'
+                    ? 'http://localhost:3000/api/verify-token'
+                    : '/api/verify-token';
+                
+                $.ajax({
+                    url: verifyUrl,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ token: token }),
+                    success: function(response) {
+                        if (response.valid) {
+                            const redirectPage = response.role === 'admin' 
+                                ? 'index.html' 
+                                : 'member-dashboard.html';
+                            window.location.href = redirectPage;
+                        } else {
+                            localStorage.removeItem('gymToken');
+                            localStorage.removeItem('userRole');
+                        }
+                    },
+                    error: function() {
+                        localStorage.removeItem('gymToken');
+                        localStorage.removeItem('userRole');
+                    }
+                });
+            }
         });
     </script>
 </body>
